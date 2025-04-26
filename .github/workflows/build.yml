@@ -24,6 +24,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y git build-essential fakeroot squashfs-tools dosfstools btrfs-progs zstd libarchive-tools
+        sudo apt install -y arch-install-scripts  # Install pacstrap
 
     - name: Install arkdep
       shell: bash
