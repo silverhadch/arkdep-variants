@@ -19,11 +19,22 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Free up disk space (clean cache)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: true  # Set to true to free up 6GB by removing the pre-cached tools
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+
     - name: Install dependencies
       shell: bash
       run: |
         sudo apt update
-        sudo apt install -y git build-essential fakeroot squashfs-tools dosfstools btrfs-progs zstd libarchive-tools arch-install-scripts
+        sudo apt install -y git build-essential fakeroot squashfs-tools dosfstools btrfs-progs zstd libarchive-tools pacman arch-install-scripts
 
     - name: Install arkdep
       shell: bash
@@ -37,19 +48,8 @@ jobs:
       run: |
         git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
 
-    - name: Free up disk space (clean cache)
-      uses: jlumbroso/free-disk-space@main
-      with:
-        tool-cache: true  # Set to true to free up 6GB by removing the pre-cached tools
-        android: true
-        dotnet: true
-        haskell: true
-        large-packages: true
-        docker-images: true
-        swap-storage: true
-
-    - id: build
-      name: Build variant
+    - name: Build variant
+      id: build
       shell: bash
       run: |
         mkdir -p target
