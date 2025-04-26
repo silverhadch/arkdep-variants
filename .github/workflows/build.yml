@@ -24,7 +24,6 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y git build-essential fakeroot squashfs-tools dosfstools btrfs-progs zstd libarchive-tools
-        sudo apt install -y arch-install-scripts  # Install pacstrap
 
     - name: Install arkdep
       shell: bash
@@ -38,14 +37,25 @@ jobs:
       run: |
         git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
 
+    - name: Free up disk space (clean cache)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: true  # Set to true to free up 6GB by removing the pre-cached tools
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+
     - id: build
       name: Build variant
       shell: bash
       run: |
-        mkdir -p /home/runner/work/arkdep-build/target  # Using an alternate directory for output
+        mkdir -p target
         cd arkdep-variants
-        sudo arkdep-build ${{ matrix.edition }} --output-dir /home/runner/work/arkdep-build/target  # Direct output to a different location
-        ARTIFACT="$(realpath /home/runner/work/arkdep-build/target/*.tar.zst)"
+        sudo arkdep-build ${{ matrix.edition }}
+        ARTIFACT="$(realpath ../target/*.tar.zst)"
         echo "artifact-path=$ARTIFACT" >> $GITHUB_OUTPUT
 
     - name: Upload artifact
@@ -57,4 +67,4 @@ jobs:
     - name: Clean up old images (optional)
       run: |
         # Assuming the older images are stored in the target directory
-        find /home/runner/work/arkdep-build/target -name "*.tar.zst" -type f -mtime +7 -exec rm {} \;  # Deletes images older than 7 days
+        find target -name "*.tar.zst" -type f -mtime +7 -exec rm {} \;  # Deletes images older than 7 days
