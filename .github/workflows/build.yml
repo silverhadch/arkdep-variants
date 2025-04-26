@@ -19,10 +19,39 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Run Arkdep Build and Upload Action
-      uses: ./.github/action.yaml  # Point to your action file
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install -y git build-essential fakeroot squashfs-tools dosfstools btrfs-progs zstd libarchive-tools
+
+    - name: Install arkdep
+      shell: bash
+      run: |
+        git clone --depth 1 https://github.com/arkanelinux/arkdep.git
+        sudo install -m755 arkdep/arkdep /usr/bin/
+        sudo install -m755 arkdep/arkdep-build /usr/bin/
+
+    - name: Clone variants repo
+      shell: bash
+      run: |
+        git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
+
+    - id: build
+      name: Build variant
+      shell: bash
+      run: |
+        mkdir -p target
+        cd arkdep-variants
+        sudo arkdep-build ${{ matrix.edition }}
+        ARTIFACT="$(realpath ../target/*.tar.zst)"
+        echo "artifact-path=$ARTIFACT" >> $GITHUB_OUTPUT
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
       with:
-        edition: ${{ matrix.edition }}
+        name: ${{ matrix.edition }}-image
+        path: ${{ steps.build.outputs.artifact-path }}
 
     - name: Clean up old images (optional)
       run: |
