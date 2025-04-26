@@ -1,0 +1,30 @@
+name: 'Build Arkdep Images and Upload'
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 5 * * *'  # Runs at 5 AM UTC daily
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        edition: [arkanelinux, test-arkanelinux-kde]  # Build both images
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Run Arkdep Build and Upload Action
+      uses: ./.github/action.yaml  # Point to your action file
+      with:
+        edition: ${{ matrix.edition }}
+
+    - name: Clean up old images (optional)
+      run: |
+        # Assuming the older images are stored in the target directory
+        find target -name "*.tar.zst" -type f -mtime +7 -exec rm {} \;  # Deletes images older than 7 days
