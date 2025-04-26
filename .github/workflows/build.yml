@@ -42,10 +42,10 @@ jobs:
       name: Build variant
       shell: bash
       run: |
-        mkdir -p target
+        mkdir -p /home/runner/work/arkdep-build/target  # Using an alternate directory for output
         cd arkdep-variants
-        sudo arkdep-build ${{ matrix.edition }}
-        ARTIFACT="$(realpath ../target/*.tar.zst)"
+        sudo arkdep-build ${{ matrix.edition }} --output-dir /home/runner/work/arkdep-build/target  # Direct output to a different location
+        ARTIFACT="$(realpath /home/runner/work/arkdep-build/target/*.tar.zst)"
         echo "artifact-path=$ARTIFACT" >> $GITHUB_OUTPUT
 
     - name: Upload artifact
@@ -57,4 +57,4 @@ jobs:
     - name: Clean up old images (optional)
       run: |
         # Assuming the older images are stored in the target directory
-        find target -name "*.tar.zst" -type f -mtime +7 -exec rm {} \;  # Deletes images older than 7 days
+        find /home/runner/work/arkdep-build/target -name "*.tar.zst" -type f -mtime +7 -exec rm {} \;  # Deletes images older than 7 days
