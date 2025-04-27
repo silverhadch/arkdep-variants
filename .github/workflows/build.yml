@@ -106,7 +106,6 @@ jobs:
         sudo install -m0644 archlinux-revoked /usr/share/pacman/keyrings/
         sudo pacman-key --init
         sudo pacman-key --populate archlinux
-        sudo pacman -Sy archlinux-keyring
         rm -f archlinux-keyring.tar.zst
 
     - name: Install arch-install-scripts
