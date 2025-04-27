@@ -144,13 +144,15 @@ jobs:
         echo "Listing contents of target directory:"
         ls -lh target/
         ls -R target/
-        echo "artifact-path=$(realpath ../target)" >> $GITHUB_OUTPUT
-
-    - name: Upload artifact
+        artifact_path=$(realpath ./target/*.tar.zst)
+        echo "${artifact_path}"
+        echo "artifact-path=${artifact_path}" >> $GITHUB_OUTPUT
+        
+    - name: Upload tar.zst artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.edition }}-image
-        path: ${{ steps.build.outputs.artifact-path }}/*
+        path: ${{ steps.build.outputs.artifact-path }}
 
     - name: Clean up old images
       run: |
