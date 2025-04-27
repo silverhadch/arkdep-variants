@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
   schedule:
     - cron: '0 5 * * *'  # Runs at 5 AM UTC daily
 
