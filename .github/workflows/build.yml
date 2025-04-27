@@ -20,34 +20,34 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Free up disk space
-      uses: jlumbroso/free-disk-space@main
-      with:
-        tool-cache: true
-        android: true
-        dotnet: true
-        haskell: true
-        large-packages: true
-        docker-images: true
-        swap-storage: true
+#    - name: Free up disk space
+#      uses: jlumbroso/free-disk-space@main
+#      with:
+#        tool-cache: true
+#        android: true
+#        dotnet: true
+#        haskell: true
+#        large-packages: true
+#        docker-images: false
+#        swap-storage: true
 
     - name: Build inside ArchLinux container
       uses: addnab/docker-run-action@v3
       with:
         image: archlinux:latest
         options: |
-          --privileged  # Needed if you need loop devices for BTRFS/mounting!
+          --privileged
           -v ${{ github.workspace }}:/workspace
-        run: |
-          pacman -Sy --noconfirm base-devel git btrfs-progs arch-install-scripts
-          cd /workspace
-          git clone --depth 1 https://github.com/arkanelinux/arkdep.git
-          install -m755 arkdep/arkdep /usr/bin/
-          install -m755 arkdep/arkdep-build /usr/bin/
-          git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
-          mkdir -p target
-          cd arkdep-variants
-          arkdep-build ${{ matrix.edition }}
+      run: |
+        pacman -Sy --noconfirm base-devel git btrfs-progs arch-install-scripts
+        cd /workspace
+        git clone --depth 1 https://github.com/arkanelinux/arkdep.git
+        install -m755 arkdep/arkdep /usr/bin/
+        install -m755 arkdep/arkdep-build /usr/bin/
+        git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
+        mkdir -p target
+        cd arkdep-variants
+        arkdep-build ${{ matrix.edition }}
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
