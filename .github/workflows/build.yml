@@ -92,6 +92,7 @@ jobs:
     - name: Init archlinux-keyring
       shell: bash
       run: |
+        sudo mkdir -p /usr/share/pacman/keyrings
         sudo install -m0644 /usr/share/keyrings/archlinux.gpg /usr/share/pacman/keyrings/
         sudo install -m0644 /usr/share/keyrings/archlinux-trusted /usr/share/pacman/keyrings/
         sudo install -m0644 /usr/share/keyrings/archlinux-revoked /usr/share/pacman/keyrings/
