@@ -149,12 +149,14 @@ jobs:
           echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
           echo "pacman-key --init" >> "$POST_BOOTSTRAP"
           echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
+          echo "cat /etc/pacman.conf" >> $POST_BOOTSTRAP
         else
-          echo "Appending to post_bootstrap.sh" >> "$POST_BOOTSTRAP"
+          echo "# Appending to post_bootstrap.sh" >> "$POST_BOOTSTRAP"
           echo "sed -i 's/^SigLevel.*/#SigLevel = Never/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
           echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
           echo "pacman-key --init" >> "$POST_BOOTSTRAP"
           echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
+          echo "cat /etc/pacman.conf" >> $POST_BOOTSTRAP
         fi
 
     - name: Update SigLevel to Never in pacman.conf of each matrix variant
