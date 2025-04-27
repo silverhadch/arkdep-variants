@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        edition: [arkanelinux, test-arkanelinux-kde]
+        edition: [arkanelinux, test-arkanelinux-kde, test-arkanelinux-pantheon, test-arkanelinux-znver4, test-debian-gnome, test-manjaro-kde]
 
     steps:
     - name: Checkout repository
@@ -103,12 +103,14 @@ jobs:
     - name: Clone variants repo
       shell: bash
       run: |
-        git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
+        REPO_NAME=$(basename -s .git "${{ github.repository }}")
+        git clone --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_NAME"
 
     - name: Save the original pacman.conf into the Overlay
       shell: bash
       run: |
-        VARIANT_DIR="arkdep-variants/arkdep-build.d/${{ matrix.edition }}" 
+        REPO_NAME=$(basename -s .git "${{ github.repository }}")
+        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}" 
         OVERLAY_ETC_DIR="${VARIANT_DIR}/overlay/post_bootstrap/etc"
         PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
 
@@ -123,7 +125,8 @@ jobs:
     - name: Update SigLevel to Never in pacman.conf of each matrix variant
       shell: bash
       run: |
-        VARIANT_DIR="arkdep-variants/arkdep-build.d/${{ matrix.edition }}"
+        REPO_NAME=$(basename -s .git "${{ github.repository }}")
+        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}"
         PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
         
         # Set SigLevel to Never in each pacman.conf
@@ -138,8 +141,9 @@ jobs:
       id: build
       shell: bash
       run: |
+        REPO_NAME=$(basename -s .git "${{ github.repository }}")
         mkdir -p target
-        cd arkdep-variants
+        cd "$REPO_NAME"
         sudo arkdep-build ${{ matrix.edition }}
         echo "Listing contents of target directory:"
         ls -lh target/
@@ -147,7 +151,7 @@ jobs:
         artifact_path=$(realpath ./target/*.tar.zst)
         echo "${artifact_path}"
         echo "artifact-path=${artifact_path}" >> $GITHUB_OUTPUT
-        
+
     - name: Upload tar.zst artifact
       uses: actions/upload-artifact@v4
       with:
