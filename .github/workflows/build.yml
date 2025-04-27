@@ -133,31 +133,41 @@ jobs:
       run: |
         VARIANT_DIR="arkdep-variants/arkdep-build.d/${{ matrix.edition }}"
         EXTENSIONS_DIR="${VARIANT_DIR}/extensions"
+        OVERLAY_ETC_DIR="${VARIANT_DIR}/overlay/post_bootstrap/etc"
+        PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
+
+        # Create the etc-overlay folder if it doesn't exist
+        if [ ! -d "$OVERLAY_ETC_DIR" ]; then
+          mkdir -p "$OVERLAY_ETC_DIR"
+        fi
+
+        # Copy the pacman.conf into the overlay
+        cp "$PACMAN_CONF" "$OVERLAY_ETC_DIR"
         
         # Create the extensions folder if it doesn't exist
-        if [ ! -d "$EXTENSIONS_DIR" ]; then
-          mkdir -p "$EXTENSIONS_DIR"
-        fi
+        #if [ ! -d "$EXTENSIONS_DIR" ]; then
+        #  mkdir -p "$EXTENSIONS_DIR"
+        #fi
         
         # Create post_bootstrap.sh if it doesn't exist
-        POST_BOOTSTRAP="${EXTENSIONS_DIR}/post_bootstrap.sh"
-        if [ ! -f "$POST_BOOTSTRAP" ]; then
-          touch "$POST_BOOTSTRAP"
-          echo "#!/bin/bash" > "$POST_BOOTSTRAP"
-          echo "# Commenting out the current SigLevel and setting it to the arch default" >> "$POST_BOOTSTRAP"
-          echo "sed -i 's/^SigLevel.*/#SigLevel = Never/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
-          echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
-          echo "pacman-key --init" >> "$POST_BOOTSTRAP"
-          echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
-          echo "cat /etc/pacman.conf" >> $POST_BOOTSTRAP
-        else
-          echo "# Appending to post_bootstrap.sh" >> "$POST_BOOTSTRAP"
-          echo "sed -i 's/^SigLevel.*/#SigLevel = Never/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
-          echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
-          echo "pacman-key --init" >> "$POST_BOOTSTRAP"
-          echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
-          echo "cat /etc/pacman.conf" >> $POST_BOOTSTRAP
-        fi
+        #POST_BOOTSTRAP="${EXTENSIONS_DIR}/post_bootstrap.sh"
+        #if [ ! -f "$POST_BOOTSTRAP" ]; then
+        #  touch "$POST_BOOTSTRAP"
+        #  echo "#!/bin/bash" > "$POST_BOOTSTRAP"
+        #  echo "# Commenting out the current SigLevel and setting it to the arch default" >> "$POST_BOOTSTRAP"
+        #  echo "sed -i 's/^SigLevel.*/#SigLevel = Never/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
+        #  echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
+        #  echo "pacman-key --init" >> "$POST_BOOTSTRAP"
+        #  echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
+        #  echo "cat /etc/pacman.conf" >> $POST_BOOTSTRAP
+        #else
+        #  echo "# Appending to post_bootstrap.sh" >> "$POST_BOOTSTRAP"
+        #  echo "sed -i 's/^SigLevel.*/#SigLevel = Never/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
+        #  echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
+        #  echo "pacman-key --init" >> "$POST_BOOTSTRAP"
+        #  echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
+        #  echo "cat /etc/pacman.conf" >> $POST_BOOTSTRAP
+        #fi
 
     - name: Update SigLevel to Never in pacman.conf of each matrix variant
       shell: bash
