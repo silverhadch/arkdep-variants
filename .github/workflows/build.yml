@@ -72,6 +72,7 @@ jobs:
         echo "HoldPkg = pacman glibc" | sudo tee -a /etc/pacman.conf
         echo "Architecture = auto" | sudo tee -a /etc/pacman.conf
         echo "CheckSpace" | sudo tee -a /etc/pacman.conf
+        echo "SigLevel = Never" | sudo tee -a /etc/pacman.conf  # Disable signature verification
         echo "" | sudo tee -a /etc/pacman.conf
         echo "[core]" | sudo tee -a /etc/pacman.conf
         echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
