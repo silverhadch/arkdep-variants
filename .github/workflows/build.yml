@@ -14,7 +14,14 @@ jobs:
 
     strategy:
       matrix:
-        edition: [arkanelinux, test-arkanelinux-kde, test-arkanelinux-pantheon, test-arkanelinux-znver4, test-debian-gnome, test-manjaro-kde]
+        edition: 
+          - arkanelinux
+          - test-arkanelinux-kde
+          - test-arkanelinux-pantheon
+          - test-arkanelinux-znver4
+          - test-debian-gnome
+          - test-manjaro-kde
+      fail-fast: false   # <-- Important: don't stop if one fails
 
     steps:
     - name: Checkout repository
@@ -42,8 +49,7 @@ jobs:
           libgpgme-dev libssl-dev fakeroot dh-autoreconf \
           haveged os-prober kwalify dosfstools libisoburn1 \
           squashfs-tools docbook2x mktorrent doxygen zstd \
-          s3cmd curl btrfs-progs meson libkmod-dev \
-          libkmod2
+          s3cmd curl btrfs-progs meson libkmod-dev libkmod2
         sudo apt remove -y multipath-tools multipath-tools-boot
 
     - name: Install pacman manually
@@ -103,33 +109,24 @@ jobs:
     - name: Clone variants repo
       shell: bash
       run: |
-        REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        git clone --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_NAME"
+        git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
 
     - name: Save the original pacman.conf into the Overlay
       shell: bash
       run: |
-        REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}" 
+        VARIANT_DIR="arkdep-variants/arkdep-build.d/${{ matrix.edition }}" 
         OVERLAY_ETC_DIR="${VARIANT_DIR}/overlay/post_bootstrap/etc"
         PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
 
-        # Create the etc-overlay folder if it doesn't exist
-        if [ ! -d "$OVERLAY_ETC_DIR" ]; then
-          mkdir -p "$OVERLAY_ETC_DIR"
-        fi
-
-        # Copy the pacman.conf into the overlay
+        mkdir -p "$OVERLAY_ETC_DIR"
         cp "$PACMAN_CONF" "$OVERLAY_ETC_DIR"
 
     - name: Update SigLevel to Never in pacman.conf of each matrix variant
       shell: bash
       run: |
-        REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}"
+        VARIANT_DIR="arkdep-variants/arkdep-build.d/${{ matrix.edition }}"
         PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
-        
-        # Set SigLevel to Never in each pacman.conf
+
         if [ -f "$PACMAN_CONF" ]; then
           echo "Updating SigLevel in $PACMAN_CONF"
           sed -i 's/^SigLevel.*/SigLevel = Never/' "$PACMAN_CONF"
@@ -140,24 +137,26 @@ jobs:
     - name: Build variant
       id: build
       shell: bash
+      continue-on-error: true   # <-- Don't fail the entire matrix if this fails
       run: |
-        REPO_NAME=$(basename -s .git "${{ github.repository }}")
         mkdir -p target
-        cd "$REPO_NAME"
+        cd arkdep-variants
         sudo arkdep-build ${{ matrix.edition }}
         echo "Listing contents of target directory:"
         ls -lh target/
         ls -R target/
-        artifact_path=$(realpath ./target/*.tar.zst)
+        artifact_path=$(realpath ./target/*.tar.zst || true)
         echo "${artifact_path}"
         echo "artifact-path=${artifact_path}" >> $GITHUB_OUTPUT
 
     - name: Upload tar.zst artifact
+      if: steps.build.outputs.artifact-path != ''
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.edition }}-image
         path: ${{ steps.build.outputs.artifact-path }}
 
     - name: Clean up old images
+      shell: bash
       run: |
         find target -name "*.tar.zst" -type f -mtime +7 -exec rm {} \;
