@@ -65,28 +65,28 @@ jobs:
         sudo touch /etc/pacman.d/mirrorlist
         sudo rm -rf pacman
 
-    - name: Create pacman.conf and configure repositories
-      shell: bash
-      run: |
-        echo "[options]" | sudo tee /etc/pacman.conf
-        echo "HoldPkg = pacman glibc" | sudo tee -a /etc/pacman.conf
-        echo "Architecture = auto" | sudo tee -a /etc/pacman.conf
-        echo "CheckSpace" | sudo tee -a /etc/pacman.conf
-        echo "SigLevel = Never" | sudo tee -a /etc/pacman.conf
-        echo "" | sudo tee -a /etc/pacman.conf
-        echo "[core]" | sudo tee -a /etc/pacman.conf
-        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
-        echo "" | sudo tee -a /etc/pacman.conf
-        echo "[extra]" | sudo tee -a /etc/pacman.conf
-        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
-        echo "" | sudo tee -a /etc/pacman.conf
-        echo "[multilib]" | sudo tee -a /etc/pacman.conf
-        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
+#    - name: Create pacman.conf and configure repositories
+#      shell: bash
+#      run: |
+#        echo "[options]" | sudo tee /etc/pacman.conf
+#        echo "HoldPkg = pacman glibc" | sudo tee -a /etc/pacman.conf
+#        echo "Architecture = auto" | sudo tee -a /etc/pacman.conf
+#        echo "CheckSpace" | sudo tee -a /etc/pacman.conf
+#        echo "SigLevel = Never" | sudo tee -a /etc/pacman.conf
+#        echo "" | sudo tee -a /etc/pacman.conf
+#        echo "[core]" | sudo tee -a /etc/pacman.conf
+#        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
+#        echo "" | sudo tee -a /etc/pacman.conf
+#        echo "[extra]" | sudo tee -a /etc/pacman.conf
+#        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
+#        echo "" | sudo tee -a /etc/pacman.conf
+#        echo "[multilib]" | sudo tee -a /etc/pacman.conf
+#        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
 
-    - name: Add mirror server to pacman mirrorlist
-      shell: bash
-      run: |
-        echo "Server = https://mirror.cj2.nl/archlinux/\$repo/os/\$arch" | sudo tee -a /etc/pacman.d/mirrorlist
+#    - name: Add mirror server to pacman mirrorlist
+#      shell: bash
+#      run: |
+#        echo "Server = https://mirror.cj2.nl/archlinux/\$repo/os/\$arch" | sudo tee -a /etc/pacman.d/mirrorlist
 
     - name: Init archlinux-keyring
       shell: bash
@@ -190,7 +190,7 @@ jobs:
         mkdir -p target
         cd arkdep-variants
         sudo arkdep-build ${{ matrix.edition }}
-        ARTIFACT="$(realpath ../target/*.tar.zst)"
+        ARTIFACT="$(/home/runner/work/arkdep-variants/arkdep-variants/arkdep-variants/target/*.tar.zst)"
         echo "artifact-path=$ARTIFACT" >> $GITHUB_OUTPUT
 
     - name: Upload artifact
