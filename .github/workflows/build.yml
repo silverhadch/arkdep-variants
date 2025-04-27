@@ -35,9 +35,7 @@ jobs:
       uses: addnab/docker-run-action@v3
       with:
         image: archlinux:latest
-        options: |
-          --privileged
-          -v ${{ github.workspace }}:/workspace
+        options: --privileged -v ${{ github.workspace }}:/workspace
       run: |
         pacman -Sy --noconfirm base-devel git btrfs-progs arch-install-scripts
         cd /workspace
