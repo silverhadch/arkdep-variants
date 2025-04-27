@@ -20,17 +20,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-#    - name: Free up disk space
-#      uses: jlumbroso/free-disk-space@main
-#      with:
-#        tool-cache: true
-#        android: true
-#        dotnet: true
-#        haskell: true
-#        large-packages: true
-#        docker-images: true
-#        swap-storage: true
-
     - name: Install basic dependencies
       shell: bash
       run: |
@@ -72,7 +61,7 @@ jobs:
         echo "HoldPkg = pacman glibc" | sudo tee -a /etc/pacman.conf
         echo "Architecture = auto" | sudo tee -a /etc/pacman.conf
         echo "CheckSpace" | sudo tee -a /etc/pacman.conf
-        echo "SigLevel = Never" | sudo tee -a /etc/pacman.conf  # Disable signature verification
+        echo "SigLevel = Never" | sudo tee -a /etc/pacman.conf
         echo "" | sudo tee -a /etc/pacman.conf
         echo "[core]" | sudo tee -a /etc/pacman.conf
         echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
@@ -102,8 +91,6 @@ jobs:
         popd
         sudo pacman-key --init
         sudo pacman-key --populate archlinux
-        sudo pacman-key --refresh-keys
-
 
     - name: Install arch-install-scripts
       shell: bash
@@ -129,6 +116,49 @@ jobs:
       shell: bash
       run: |
         git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
+
+    - name: Create extensions folder and post_bootstrap.sh if necessary
+      shell: bash
+      run: |
+        VARIANT_DIR="arkdep-variants/${{ matrix.edition }}"
+        EXTENSIONS_DIR="${VARIANT_DIR}/extensions"
+        
+        # Create the extensions folder if it doesn't exist
+        if [ ! -d "$EXTENSIONS_DIR" ]; then
+          mkdir -p "$EXTENSIONS_DIR"
+        fi
+        
+        # Create post_bootstrap.sh if it doesn't exist
+        POST_BOOTSTRAP="${EXTENSIONS_DIR}/post_bootstrap.sh"
+        if [ ! -f "$POST_BOOTSTRAP" ]; then
+          touch "$POST_BOOTSTRAP"
+          echo "#!/bin/bash" > "$POST_BOOTSTRAP"
+          echo "# Commenting out the current SigLevel and setting it to the arch default" >> "$POST_BOOTSTRAP"
+          echo "sed -i 's/^SigLevel.*/#SigLevel = Never/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
+          echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
+          echo "pacman-key --init" >> "$POST_BOOTSTRAP"
+          echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
+        else
+          echo "Appending to post_bootstrap.sh" >> "$POST_BOOTSTRAP"
+          echo "sed -i 's/^SigLevel.*/#SigLevel = Never/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
+          echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
+          echo "pacman-key --init" >> "$POST_BOOTSTRAP"
+          echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
+        fi
+
+    - name: Update SigLevel to Never in pacman.conf of each matrix variant
+      shell: bash
+      run: |
+        VARIANT_DIR="arkdep-variants/${{ matrix.edition }}"
+        PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
+        
+        # Set SigLevel to Never in each pacman.conf
+        if [ -f "$PACMAN_CONF" ]; then
+          echo "Updating SigLevel in $PACMAN_CONF"
+          sed -i 's/^SigLevel.*/SigLevel = Never/' "$PACMAN_CONF"
+        else
+          echo "pacman.conf not found in $VARIANT_DIR"
+        fi
 
     - name: Build variant
       id: build
