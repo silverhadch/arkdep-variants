@@ -142,7 +142,8 @@ jobs:
         cd arkdep-variants
         sudo arkdep-build ${{ matrix.edition }}
         echo "Listing contents of target directory:"
-        ls -lh ../target
+        ls -lh target/
+        ls -R target/
         echo "artifact-path=$(realpath ../target)" >> $GITHUB_OUTPUT
 
     - name: Upload artifact
