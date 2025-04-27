@@ -34,6 +34,7 @@ jobs:
     - name: Install basic dependencies
       shell: bash
       run: |
+        sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
         sudo apt-get install -y \
           gdisk zip systemd-container bmap-tools asciidoc \
           libarchive-tools git build-essential cmake \
