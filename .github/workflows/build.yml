@@ -141,6 +141,7 @@ jobs:
         mkdir -p target
         cd arkdep-variants
         sudo arkdep-build ${{ matrix.edition }}
+        ls "$(realpath ../target/)"
         ARTIFACT="$(realpath ../target/*.tar.zst)"
         echo "artifact-path=$ARTIFACT" >> $GITHUB_OUTPUT
 
