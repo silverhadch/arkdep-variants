@@ -65,30 +65,7 @@ jobs:
         sudo touch /etc/pacman.d/mirrorlist
         sudo rm -rf pacman
 
-#    - name: Create pacman.conf and configure repositories
-#      shell: bash
-#      run: |
-#        echo "[options]" | sudo tee /etc/pacman.conf
-#        echo "HoldPkg = pacman glibc" | sudo tee -a /etc/pacman.conf
-#        echo "Architecture = auto" | sudo tee -a /etc/pacman.conf
-#        echo "CheckSpace" | sudo tee -a /etc/pacman.conf
-#        echo "SigLevel = Never" | sudo tee -a /etc/pacman.conf
-#        echo "" | sudo tee -a /etc/pacman.conf
-#        echo "[core]" | sudo tee -a /etc/pacman.conf
-#        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
-#        echo "" | sudo tee -a /etc/pacman.conf
-#        echo "[extra]" | sudo tee -a /etc/pacman.conf
-#        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
-#        echo "" | sudo tee -a /etc/pacman.conf
-#        echo "[multilib]" | sudo tee -a /etc/pacman.conf
-#        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
-
-#    - name: Add mirror server to pacman mirrorlist
-#      shell: bash
-#      run: |
-#        echo "Server = https://mirror.cj2.nl/archlinux/\$repo/os/\$arch" | sudo tee -a /etc/pacman.d/mirrorlist
-
-    - name: Init archlinux-keyring
+    - name: Install archlinux-keyring
       shell: bash
       run: |
         sudo mkdir -p /usr/share/pacman/keyrings
@@ -128,11 +105,10 @@ jobs:
       run: |
         git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
 
-    - name: Create extensions folder and post_bootstrap.sh if necessary
+    - name: Save the original pacman.conf into the Overlay
       shell: bash
       run: |
-        VARIANT_DIR="arkdep-variants/arkdep-build.d/${{ matrix.edition }}"
-        EXTENSIONS_DIR="${VARIANT_DIR}/extensions"
+        VARIANT_DIR="arkdep-variants/arkdep-build.d/${{ matrix.edition }}" 
         OVERLAY_ETC_DIR="${VARIANT_DIR}/overlay/post_bootstrap/etc"
         PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
 
@@ -143,31 +119,6 @@ jobs:
 
         # Copy the pacman.conf into the overlay
         cp "$PACMAN_CONF" "$OVERLAY_ETC_DIR"
-        
-        # Create the extensions folder if it doesn't exist
-        #if [ ! -d "$EXTENSIONS_DIR" ]; then
-        #  mkdir -p "$EXTENSIONS_DIR"
-        #fi
-        
-        # Create post_bootstrap.sh if it doesn't exist
-        #POST_BOOTSTRAP="${EXTENSIONS_DIR}/post_bootstrap.sh"
-        #if [ ! -f "$POST_BOOTSTRAP" ]; then
-        #  touch "$POST_BOOTSTRAP"
-        #  echo "#!/bin/bash" > "$POST_BOOTSTRAP"
-        #  echo "# Commenting out the current SigLevel and setting it to the arch default" >> "$POST_BOOTSTRAP"
-        #  echo "sed -i 's/^SigLevel.*/#SigLevel = Never/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
-        #  echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
-        #  echo "pacman-key --init" >> "$POST_BOOTSTRAP"
-        #  echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
-        #  echo "cat /etc/pacman.conf" >> $POST_BOOTSTRAP
-        #else
-        #  echo "# Appending to post_bootstrap.sh" >> "$POST_BOOTSTRAP"
-        #  echo "sed -i 's/^SigLevel.*/#SigLevel = Never/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
-        #  echo "sed -i 's/#SigLevel.*/SigLevel = Required DatabaseOptional/' /etc/pacman.conf" >> "$POST_BOOTSTRAP"
-        #  echo "pacman-key --init" >> "$POST_BOOTSTRAP"
-        #  echo "pacman-key --populate archlinux" >> "$POST_BOOTSTRAP"
-        #  echo "cat /etc/pacman.conf" >> $POST_BOOTSTRAP
-        #fi
 
     - name: Update SigLevel to Never in pacman.conf of each matrix variant
       shell: bash
