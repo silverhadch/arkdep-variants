@@ -91,7 +91,9 @@ jobs:
     - name: Initialize pacman keyring and populate keys
       shell: bash
       run: |
-        sudo pacman -Sy archlinux-keyring --noconfirm
+        # Install the keyring package, ignoring dependencies
+        sudo pacman -Sy archlinux-keyring --noconfirm --needed --assume-installed
+
         sudo pacman-key --init
         sudo pacman-key --populate archlinux
         sudo pacman-key --keyserver hkp://keyserver.ubuntu.com:80 --refresh-keys
