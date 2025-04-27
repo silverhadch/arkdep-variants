@@ -13,16 +13,16 @@ jobs:
 
     strategy:
       matrix:
-        edition: [arkanelinux, test-arkanelinux-kde]  # Build both images
+        edition: [arkanelinux, test-arkanelinux-kde]
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Free up disk space (clean cache)
+    - name: Free up disk space
       uses: jlumbroso/free-disk-space@main
       with:
-        tool-cache: true  # Set to true to free up 6GB by removing the pre-cached tools
+        tool-cache: true
         android: true
         dotnet: true
         haskell: true
@@ -30,11 +30,64 @@ jobs:
         docker-images: true
         swap-storage: true
 
-    - name: Install dependencies
+    - name: Install basic dependencies
       shell: bash
       run: |
         sudo apt update
-        sudo apt install -y git build-essential fakeroot squashfs-tools dosfstools btrfs-progs zstd libarchive-tools pacman arch-install-scripts
+        sudo apt install -y git build-essential fakeroot squashfs-tools dosfstools btrfs-progs zstd libarchive-tools wget
+
+    - name: Install pacman manually
+      shell: bash
+      env:
+        PACMAN_VERSION: 6.0.2
+      run: |
+        git clone --depth 1 https://gitlab.archlinux.org/pacman/pacman.git
+        pushd pacman
+          wget https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.xz
+          tar -xvf pacman-${PACMAN_VERSION}.tar.xz
+          pushd pacman-${PACMAN_VERSION}
+            meson --prefix=/usr \
+                  --buildtype=plain \
+                  -Ddoc=disabled \
+                  -Ddoxygen=disabled \
+                  -Dscriptlet-shell=/usr/bin/bash \
+                  -Dldconfig=/usr/bin/ldconfig \
+                  build
+            ninja -C build
+            sudo ninja -C build install
+          popd
+        popd
+        sudo install -m644 pacman/pacman.conf /etc/pacman.conf
+        sudo install -m644 pacman/makepkg.conf /etc/
+        sudo mkdir -p /etc/pacman.d
+        sudo touch /etc/pacman.d/mirrorlist
+        sudo rm -rf pacman
+
+    - name: Install archlinux-keyring
+      shell: bash
+      run: |
+        sudo install -dm755 /usr/share/pacman/keyrings/
+        wget https://archlinux.org/packages/core/any/archlinux-keyring/download -O archlinux-keyring.tar.zst
+        tar --use-compress-program=unzstd -xvf archlinux-keyring.tar.zst --strip-components=4 --wildcards usr/share/pacman/keyrings/*
+        sudo install -m0644 archlinux.gpg /usr/share/pacman/keyrings/
+        sudo install -m0644 archlinux-trusted /usr/share/pacman/keyrings/
+        sudo install -m0644 archlinux-revoked /usr/share/pacman/keyrings/
+        sudo pacman-key --init
+        sudo pacman-key --populate archlinux
+        rm -f archlinux-keyring.tar.zst
+
+    - name: Install arch-install-scripts
+      shell: bash
+      env:
+        VERSION: "28"
+      run: |
+        wget https://github.com/archlinux/arch-install-scripts/archive/refs/tags/v${VERSION}.tar.gz -O arch-install-scripts.tar.gz
+        tar -xvf arch-install-scripts.tar.gz
+        cd arch-install-scripts-${VERSION}
+        make
+        sudo make PREFIX=/usr install
+        cd ..
+        rm -rf arch-install-scripts*
 
     - name: Install arkdep
       shell: bash
@@ -64,7 +117,6 @@ jobs:
         name: ${{ matrix.edition }}-image
         path: ${{ steps.build.outputs.artifact-path }}
 
-    - name: Clean up old images (optional)
+    - name: Clean up old images
       run: |
-        # Assuming the older images are stored in the target directory
-        find target -name "*.tar.zst" -type f -mtime +7 -exec rm {} \;  # Deletes images older than 7 days
+        find target -name "*.tar.zst" -type f -mtime +7 -exec rm {} \;
