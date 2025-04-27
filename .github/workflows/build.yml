@@ -1,12 +1,12 @@
-name: 'Build Arkdep Images and Upload (Docker)'
+name: 'Build Arkdep Images and Upload'
 
 on:
   push:
     branches:
       - main
-      - dev
+      - dev  # Added dev branch for testing purposes
   schedule:
-    - cron: '0 5 * * *'
+    - cron: '0 5 * * *'  # Runs at 5 AM UTC daily
 
 jobs:
   build:
@@ -20,38 +20,130 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-#    - name: Free up disk space
-#      uses: jlumbroso/free-disk-space@main
-#      with:
-#        tool-cache: true
-#        android: true
-#        dotnet: true
-#        haskell: true
-#        large-packages: true
-#        docker-images: false
-#        swap-storage: true
-
-    - name: Build inside ArchLinux container
-      uses: addnab/docker-run-action@v3
+    - name: Free up disk space
+      uses: jlumbroso/free-disk-space@main
       with:
-        image: archlinux:latest
-        options: --privileged -v ${{ github.workspace }}:/workspace
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+
+    - name: Install basic dependencies
+      shell: bash
       run: |
-        pacman -Sy --noconfirm base-devel git btrfs-progs arch-install-scripts
-        cd /workspace
+        sudo apt-get install -y \
+          gdisk zip systemd-container bmap-tools asciidoc \
+          libarchive-tools git build-essential cmake \
+          libarchive-dev pkg-config libcurl4-openssl-dev \
+          libgpgme-dev libssl-dev fakeroot dh-autoreconf \
+          haveged os-prober kwalify dosfstools libisoburn1 \
+          squashfs-tools docbook2x mktorrent doxygen zstd \
+          s3cmd curl btrfs-progs meson libkmod-dev \
+          libkmod2
+        sudo apt remove -y multipath-tools multipath-tools-boot
+
+    - name: Install pacman manually
+      shell: bash
+      env:
+        PACMAN_VERSION: 6.0.2
+      run: |
+        git clone --depth 1 https://gitlab.archlinux.org/pacman/pacman.git
+        pushd pacman
+          wget https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.xz
+          tar -xvf pacman-${PACMAN_VERSION}.tar.xz
+          pushd pacman-${PACMAN_VERSION}
+            meson --prefix=/usr --buildtype=plain -Ddoc=disabled -Ddoxygen=disabled -Dscriptlet-shell=/usr/bin/bash -Dldconfig=/usr/bin/ldconfig build
+            ninja -C build
+            sudo ninja -C build install
+          popd
+        popd
+        sudo mkdir -p /etc/pacman.d
+        sudo touch /etc/pacman.d/mirrorlist
+        sudo rm -rf pacman
+
+    - name: Create pacman.conf and configure repositories
+      shell: bash
+      run: |
+        echo "[options]" | sudo tee /etc/pacman.conf
+        echo "HoldPkg = pacman glibc" | sudo tee -a /etc/pacman.conf
+        echo "Architecture = auto" | sudo tee -a /etc/pacman.conf
+        echo "CheckSpace" | sudo tee -a /etc/pacman.conf
+        echo "SigLevel = Never" | sudo tee -a /etc/pacman.conf  # Disable signature verification
+        echo "" | sudo tee -a /etc/pacman.conf
+        echo "[core]" | sudo tee -a /etc/pacman.conf
+        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
+        echo "" | sudo tee -a /etc/pacman.conf
+        echo "[extra]" | sudo tee -a /etc/pacman.conf
+        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
+        echo "" | sudo tee -a /etc/pacman.conf
+        echo "[multilib]" | sudo tee -a /etc/pacman.conf
+        echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
+
+    - name: Add mirror server to pacman mirrorlist
+      shell: bash
+      run: |
+        echo "Server = https://mirror.cj2.nl/archlinux/\$repo/os/\$arch" | sudo tee -a /etc/pacman.d/mirrorlist
+
+    - name: Init archlinux-keyring
+      shell: bash
+      run: |
+        sudo mkdir -p /usr/share/pacman/keyrings
+        mkdir -p archlinux-keyring
+        pushd archlinux-keyring
+          wget https://archlinux.org/packages/core/any/archlinux-keyring/download -O /tmp/archlinux-keyring.tar.zst
+          tar --use-compress-program=unzstd --strip-components=4 --wildcards -xvf /tmp/archlinux-keyring.tar.zst usr/share/pacman/keyrings/*
+          sudo install -m0644 archlinux.gpg /usr/share/pacman/keyrings/
+          sudo install -m0644 archlinux-trusted /usr/share/pacman/keyrings/
+          sudo install -m0644 archlinux-revoked /usr/share/pacman/keyrings/
+        popd
+        sudo pacman-key --init
+        sudo pacman-key --populate archlinux
+        sudo pacman-key --refresh-keys
+
+
+    - name: Install arch-install-scripts
+      shell: bash
+      env:
+        VERSION: "28"
+      run: |
+        wget https://github.com/archlinux/arch-install-scripts/archive/refs/tags/v${VERSION}.tar.gz -O arch-install-scripts.tar.gz
+        tar -xvf arch-install-scripts.tar.gz
+        cd arch-install-scripts-${VERSION}
+        make
+        sudo make PREFIX=/usr install
+        cd ..
+        rm -rf arch-install-scripts*
+
+    - name: Install arkdep
+      shell: bash
+      run: |
         git clone --depth 1 https://github.com/arkanelinux/arkdep.git
-        install -m755 arkdep/arkdep /usr/bin/
-        install -m755 arkdep/arkdep-build /usr/bin/
+        sudo install -m755 arkdep/arkdep /usr/bin/
+        sudo install -m755 arkdep/arkdep-build /usr/bin/
+
+    - name: Clone variants repo
+      shell: bash
+      run: |
         git clone --depth 1 https://github.com/silverhadch/arkdep-variants.git arkdep-variants
+
+    - name: Build variant
+      id: build
+      shell: bash
+      run: |
         mkdir -p target
         cd arkdep-variants
-        arkdep-build ${{ matrix.edition }}
+        sudo arkdep-build ${{ matrix.edition }}
+        ARTIFACT="$(realpath ../target/*.tar.zst)"
+        echo "artifact-path=$ARTIFACT" >> $GITHUB_OUTPUT
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.edition }}-image
-        path: target/*.tar.zst
+        path: ${{ steps.build.outputs.artifact-path }}
 
     - name: Clean up old images
       run: |
