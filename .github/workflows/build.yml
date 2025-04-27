@@ -34,7 +34,39 @@ jobs:
       shell: bash
       run: |
         sudo apt update
-        sudo apt install -y git libarchive build-essential fakeroot squashfs-tools dosfstools btrfs-progs zstd libarchive-tools wget meson
+          sudo apt-get install \
+          gdisk \
+          zip \
+          systemd-container \
+          bmap-tools \
+          asciidoc \
+          libarchive-tools \
+          git \
+          build-essential \
+          cmake \
+          libarchive-dev \
+          pkg-config \
+          libcurl4-openssl-dev \
+          libgpgme-dev \
+          libssl-dev \
+          fakeroot \
+          dh-autoreconf \
+          haveged \
+          os-prober \
+          kwalify \
+          dosfstools \
+          libisoburn1 \
+          squashfs-tools \
+          docbook2x \
+          mktorrent \
+          doxygen \
+          zstd \
+          s3cmd \
+          curl \
+          btrfs-progs \
+          meson \
+          libkmod-dev \
+          libkmod2
 
     - name: Install pacman manually
       shell: bash
