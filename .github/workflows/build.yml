@@ -67,6 +67,8 @@ jobs:
           meson \
           libkmod-dev \
           libkmod2
+          sudo apt remove multipath-tools \
+          multipath-tools-boot
 
     - name: Install pacman manually
       shell: bash
@@ -89,8 +91,6 @@ jobs:
             sudo ninja -C build install
           popd
         popd
-        sudo install -m644 pacman/pacman.conf /etc/pacman.conf
-        sudo install -m644 pacman/makepkg.conf /etc/
         sudo mkdir -p /etc/pacman.d
         sudo touch /etc/pacman.d/mirrorlist
         sudo rm -rf pacman
