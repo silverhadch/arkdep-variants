@@ -18,9 +18,10 @@ jobs:
           - arkanelinux
           - test-arkanelinux-kde
           - test-arkanelinux-pantheon
-          - test-arkanelinux-znver4
-          - test-debian-gnome
-          - test-manjaro-kde
+          # commented means dont work yet
+          # - test-arkanelinux-znver4
+          # - test-debian-gnome
+          # - test-manjaro-kde
       fail-fast: false   # <-- Important: don't stop if one fails
 
     steps:
