@@ -90,7 +90,7 @@ jobs:
     - name: Initialize pacman keyring and populate keys
       shell: bash
       run: |
-        sudo pacman -Sy archlinux-keyring
+        sudo pacman -Sy archlinux-keyring --noconfirm
         sudo pacman-key --init
         sudo pacman-key --populate archlinux
         sudo pacman-key --keyserver hkp://keyserver.ubuntu.com:80 --refresh-keys
