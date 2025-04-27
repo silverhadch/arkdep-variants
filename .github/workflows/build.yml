@@ -89,18 +89,12 @@ jobs:
       run: |
         echo "Server = https://mirror.cj2.nl/archlinux/\$repo/os/\$arch" | sudo tee -a /etc/pacman.d/mirrorlist
 
-#    - name: Install archlinux-keyring
-#      shell: bash
-#      run: |
-#        sudo install -dm755 /usr/share/pacman/keyrings/
-#        wget https://archlinux.org/packages/core/any/archlinux-keyring/download -O archlinux-keyring.tar.zst
-#        tar --use-compress-program=unzstd -xvf archlinux-keyring.tar.zst --strip-components=4 --wildcards usr/share/pacman/keyrings/*
-#        sudo install -m0644 archlinux.gpg /usr/share/pacman/keyrings/
-#        sudo install -m0644 archlinux-trusted /usr/share/pacman/keyrings/
-#        sudo install -m0644 archlinux-revoked /usr/share/pacman/keyrings/
-#        sudo pacman-key --init
-#        sudo pacman-key --populate archlinux
-#        rm -f archlinux-keyring.tar.zst
+    - name: Init archlinux-keyring
+      shell: bash
+      run: |
+        sudo pacman-key --init
+        sudo pacman-key --populate archlinux
+
 
     - name: Install arch-install-scripts
       shell: bash
