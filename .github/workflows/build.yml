@@ -141,15 +141,15 @@ jobs:
         mkdir -p target
         cd arkdep-variants
         sudo arkdep-build ${{ matrix.edition }}
-        ls "$(realpath ../target/)"
-        ARTIFACT="$(realpath ../target/*.tar.zst)"
-        echo "artifact-path=$ARTIFACT" >> $GITHUB_OUTPUT
+        echo "Listing contents of target directory:"
+        ls -lh ../target
+        echo "artifact-path=$(realpath ../target)" >> $GITHUB_OUTPUT
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.edition }}-image
-        path: ${{ steps.build.outputs.artifact-path }}
+        path: ${{ steps.build.outputs.artifact-path }}/*
 
     - name: Clean up old images
       run: |
