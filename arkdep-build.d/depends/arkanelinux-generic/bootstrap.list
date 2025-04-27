@@ -1,5 +1,6 @@
 base
 linux
 linux-firmware
+pacman
 arkane-keyring
 dracut
