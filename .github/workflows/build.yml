@@ -95,19 +95,19 @@ jobs:
         sudo touch /etc/pacman.d/mirrorlist
         sudo rm -rf pacman
 
-    - name: Install archlinux-keyring
-      shell: bash
-      run: |
-        sudo install -dm755 /usr/share/pacman/keyrings/
-        wget https://archlinux.org/packages/core/any/archlinux-keyring/download -O archlinux-keyring.tar.zst
-        tar --use-compress-program=unzstd -xvf archlinux-keyring.tar.zst --strip-components=4 --wildcards usr/share/pacman/keyrings/*
-        sudo install -m0644 archlinux.gpg /usr/share/pacman/keyrings/
-        sudo install -m0644 archlinux-trusted /usr/share/pacman/keyrings/
-        sudo install -m0644 archlinux-revoked /usr/share/pacman/keyrings/
-        sudo pacman-key --init
-        sudo pacman-key --populate archlinux
-        sudo pacman-key --keyserver hkp://keyserver.ubuntu.com:80 --refresh-keys
-        rm -f archlinux-keyring.tar.zst
+   # - name: Install archlinux-keyring
+   #   shell: bash
+   #   run: |
+   #     sudo install -dm755 /usr/share/pacman/keyrings/
+   #     wget https://archlinux.org/packages/core/any/archlinux-keyring/download -O archlinux-keyring.tar.zst
+   #     tar --use-compress-program=unzstd -xvf archlinux-keyring.tar.zst --strip-components=4 --wildcards usr/share/pacman/keyrings/*
+   #     sudo install -m0644 archlinux.gpg /usr/share/pacman/keyrings/
+   #     sudo install -m0644 archlinux-trusted /usr/share/pacman/keyrings/
+   #     sudo install -m0644 archlinux-revoked /usr/share/pacman/keyrings/
+   #     sudo pacman-key --init
+   #     sudo pacman-key --populate archlinux
+   #     sudo pacman-key --keyserver hkp://keyserver.ubuntu.com:80 --refresh-keys
+   #     rm -f archlinux-keyring.tar.zst
 
     - name: Install arch-install-scripts
       shell: bash
