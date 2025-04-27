@@ -131,7 +131,7 @@ jobs:
     - name: Create extensions folder and post_bootstrap.sh if necessary
       shell: bash
       run: |
-        VARIANT_DIR="arkdep-variants/${{ matrix.edition }}"
+        VARIANT_DIR="arkdep-variants/arkdep-build.d/${{ matrix.edition }}"
         EXTENSIONS_DIR="${VARIANT_DIR}/extensions"
         
         # Create the extensions folder if it doesn't exist
@@ -160,7 +160,7 @@ jobs:
     - name: Update SigLevel to Never in pacman.conf of each matrix variant
       shell: bash
       run: |
-        VARIANT_DIR="arkdep-variants/${{ matrix.edition }}"
+        VARIANT_DIR="arkdep-variants/arkdep-build.d/${{ matrix.edition }}"
         PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
         
         # Set SigLevel to Never in each pacman.conf
