@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         edition:
-          - my-arkane-build
+          - lucos
           # - arkanelinux
           # - test-arkanelinux-kde
       fail-fast: false
