@@ -19,11 +19,6 @@ jobs:
           # commented out because space
           # - arkanelinux
           # - test-arkanelinux-kde
-          # - test-arkanelinux-pantheon
-          # commented means dont work yet
-          # - test-arkanelinux-znver4
-          # - test-debian-gnome
-          # - test-manjaro-kde
       fail-fast: false
 
     steps:
@@ -114,29 +109,6 @@ jobs:
       run: |
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
         git clone --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_NAME"
-
-#    - name: Save pacman.conf into the Overlay if not present
-#      shell: bash
-#      run: |
-#        REPO_NAME=$(basename -s .git "${{ github.repository }}")
-#        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}" 
-#        OVERLAY_ETC_DIR="${VARIANT_DIR}/overlay/post_bootstrap/etc"
-#        PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
-#        OVERLAY_PACMAN_CONF="${OVERLAY_ETC_DIR}/pacman.conf"
-
-#       # Create overlay etc folder if needed
-#       mkdir -p "$OVERLAY_ETC_DIR"
-#
-#        # Only copy if overlay pacman.conf does not exist
-#        if [ ! -f "$OVERLAY_PACMAN_CONF" ]; then
-#          echo "No pacman.conf found in overlay, copying original."
-#          cp "$PACMAN_CONF" "$OVERLAY_ETC_DIR"
-#          # Set SigLevel to Never
-#          echo "Setting SigLevel = Never in copied pacman.conf"
-#          sed -i 's/^SigLevel.*/SigLevel = Never/' "$OVERLAY_PACMAN_CONF"
-#        else
-#          echo "pacman.conf already exists in overlay. Skipping copy and SigLevel modification."
-#        fi
 
     - name: Build variant
       id: build
