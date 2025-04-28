@@ -118,9 +118,8 @@ jobs:
     - name: Save pacman.conf into the Overlay if not present
       shell: bash
       run: |
-        set -e
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}"
+        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}" 
         OVERLAY_ETC_DIR="${VARIANT_DIR}/overlay/post_bootstrap/etc"
         PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
         OVERLAY_PACMAN_CONF="${OVERLAY_ETC_DIR}/pacman.conf"
