@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         edition:
-           - my-arkane-build
+          - my-arkane-build
           # commented out because space
           # - arkanelinux
           # - test-arkanelinux-kde
@@ -24,7 +24,7 @@ jobs:
           # - test-arkanelinux-znver4
           # - test-debian-gnome
           # - test-manjaro-kde
-      fail-fast: false   # <-- Important: don't stop if one fails
+      fail-fast: false
 
     steps:
     - name: Checkout repository
@@ -45,7 +45,14 @@ jobs:
       shell: bash
       run: |
         sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
-        sudo apt-get install -y \n          gdisk zip systemd-container bmap-tools asciidoc \n          libarchive-tools git build-essential cmake \n          libarchive-dev pkg-config libcurl4-openssl-dev \n          libgpgme-dev libssl-dev fakeroot dh-autoreconf \n          haveged os-prober kwalify dosfstools libisoburn1 \n          squashfs-tools docbook2x mktorrent doxygen zstd \n          s3cmd curl btrfs-progs meson libkmod-dev libkmod2
+        sudo apt-get install -y \
+          gdisk zip systemd-container bmap-tools asciidoc \
+          libarchive-tools git build-essential cmake \
+          libarchive-dev pkg-config libcurl4-openssl-dev \
+          libgpgme-dev libssl-dev fakeroot dh-autoreconf \
+          haveged os-prober kwalify dosfstools libisoburn1 \
+          squashfs-tools docbook2x mktorrent doxygen zstd \
+          s3cmd curl btrfs-progs meson libkmod-dev libkmod2
         sudo apt remove -y multipath-tools multipath-tools-boot
 
     - name: Install pacman manually
@@ -108,41 +115,34 @@ jobs:
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
         git clone --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_NAME"
 
-    - name: Save the original pacman.conf into the Overlay
+    - name: Save pacman.conf into the Overlay if not present
       shell: bash
       run: |
+        set -e
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        VARIANT_DIR="$REPO_NAME/arkdep-build.d/${{ matrix.edition }}"
-        OVERLAY_ETC_DIR="$VARIANT_DIR/overlay/post_bootstrap/etc"
-        PACMAN_CONF="$VARIANT_DIR/pacman.conf"
+        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}"
+        OVERLAY_ETC_DIR="${VARIANT_DIR}/overlay/post_bootstrap/etc"
+        PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
+        OVERLAY_PACMAN_CONF="${OVERLAY_ETC_DIR}/pacman.conf"
 
-        # Create the etc-overlay folder if it doesn't exist
-        if [ ! -d "$OVERLAY_ETC_DIR" ]; then
-          mkdir -p "$OVERLAY_ETC_DIR"
-        fi
+        # Create overlay etc folder if needed
+        mkdir -p "$OVERLAY_ETC_DIR"
 
-        # Copy the pacman.conf into the overlay
-        cp "$PACMAN_CONF" "$OVERLAY_ETC_DIR"
-
-    - name: Update SigLevel to Never in pacman.conf of each matrix variant
-      shell: bash
-      run: |
-        REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        VARIANT_DIR="$REPO_NAME/arkdep-build.d/${{ matrix.edition }}"
-        PACMAN_CONF="$VARIANT_DIR/pacman.conf"
-
-        # Set SigLevel to Never in each pacman.conf
-        if [ -f "$PACMAN_CONF" ]; then
-          echo "Updating SigLevel in $PACMAN_CONF"
-          sed -i 's/^SigLevel.*/SigLevel = Never/' "$PACMAN_CONF"
+        # Only copy if overlay pacman.conf does not exist
+        if [ ! -f "$OVERLAY_PACMAN_CONF" ]; then
+          echo "No pacman.conf found in overlay, copying original."
+          cp "$PACMAN_CONF" "$OVERLAY_ETC_DIR"
+          # Set SigLevel to Never
+          echo "Setting SigLevel = Never in copied pacman.conf"
+          sed -i 's/^SigLevel.*/SigLevel = Never/' "$OVERLAY_PACMAN_CONF"
         else
-          echo "pacman.conf not found in $VARIANT_DIR"
+          echo "pacman.conf already exists in overlay. Skipping copy and SigLevel modification."
         fi
 
     - name: Build variant
       id: build
       shell: bash
-      continue-on-error: true   # <-- Don't fail the entire matrix if this fails
+      continue-on-error: true
       run: |
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
         mkdir -p target
