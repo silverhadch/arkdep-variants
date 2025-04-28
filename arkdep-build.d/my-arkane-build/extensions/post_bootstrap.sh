@@ -11,5 +11,6 @@ arch-chroot "$workdir" pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chao
 arch-chroot "$workdir" pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
 arch-chroot "$workdir" bash -c "echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf"
 printf '\e[1;32m-->\e[0m\e[1m Syncing package databases\e[0m\n'
-arch-chroot "$workdir" pacman -Sy
+arch-chroot "$workdir" pacman -Syyu
+arch-chroot "$workdir" cat /etc/pacman.conf
 printf '\e[1;32m-->\e[0m\e[1m Chaotic-AUR setup complete!\e[0m\n'
