@@ -81,6 +81,19 @@ jobs:
         sudo pacman-key --init
         sudo pacman-key --populate archlinux
 
+    - name: Install arch-install-scripts
+      shell: bash
+      env:
+        VERSION: "28"
+      run: |
+        wget https://github.com/archlinux/arch-install-scripts/archive/refs/tags/v${VERSION}.tar.gz -O arch-install-scripts.tar.gz
+        tar -xvf arch-install-scripts.tar.gz
+        cd arch-install-scripts-${VERSION}
+        make
+        sudo make PREFIX=/usr install
+        cd ..
+        rm -rf arch-install-scripts*
+        
     - name: Install arkdep
       run: |
         git clone --depth 1 https://github.com/arkanelinux/arkdep.git
