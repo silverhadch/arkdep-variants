@@ -103,7 +103,7 @@ jobs:
     - name: Clone variants repo
       run: |
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        git clone --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_NAME"
+        git clone -b dev --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_NAME"
         
     - name: Build variant
       id: build
