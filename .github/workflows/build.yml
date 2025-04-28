@@ -14,10 +14,11 @@ jobs:
 
     strategy:
       matrix:
-        edition: 
+        edition:
+           - my-arkane-build
           # commented out because space
           # - arkanelinux
-          - test-arkanelinux-kde
+          # - test-arkanelinux-kde
           # - test-arkanelinux-pantheon
           # commented means dont work yet
           # - test-arkanelinux-znver4
@@ -44,14 +45,7 @@ jobs:
       shell: bash
       run: |
         sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
-        sudo apt-get install -y \
-          gdisk zip systemd-container bmap-tools asciidoc \
-          libarchive-tools git build-essential cmake \
-          libarchive-dev pkg-config libcurl4-openssl-dev \
-          libgpgme-dev libssl-dev fakeroot dh-autoreconf \
-          haveged os-prober kwalify dosfstools libisoburn1 \
-          squashfs-tools docbook2x mktorrent doxygen zstd \
-          s3cmd curl btrfs-progs meson libkmod-dev libkmod2
+        sudo apt-get install -y \n          gdisk zip systemd-container bmap-tools asciidoc \n          libarchive-tools git build-essential cmake \n          libarchive-dev pkg-config libcurl4-openssl-dev \n          libgpgme-dev libssl-dev fakeroot dh-autoreconf \n          haveged os-prober kwalify dosfstools libisoburn1 \n          squashfs-tools docbook2x mktorrent doxygen zstd \n          s3cmd curl btrfs-progs meson libkmod-dev libkmod2
         sudo apt remove -y multipath-tools multipath-tools-boot
 
     - name: Install pacman manually
@@ -118,9 +112,9 @@ jobs:
       shell: bash
       run: |
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}" 
-        OVERLAY_ETC_DIR="${VARIANT_DIR}/overlay/post_bootstrap/etc"
-        PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
+        VARIANT_DIR="$REPO_NAME/arkdep-build.d/${{ matrix.edition }}"
+        OVERLAY_ETC_DIR="$VARIANT_DIR/overlay/post_bootstrap/etc"
+        PACMAN_CONF="$VARIANT_DIR/pacman.conf"
 
         # Create the etc-overlay folder if it doesn't exist
         if [ ! -d "$OVERLAY_ETC_DIR" ]; then
@@ -134,9 +128,9 @@ jobs:
       shell: bash
       run: |
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        VARIANT_DIR="${REPO_NAME}/arkdep-build.d/${{ matrix.edition }}"
-        PACMAN_CONF="${VARIANT_DIR}/pacman.conf"
-        
+        VARIANT_DIR="$REPO_NAME/arkdep-build.d/${{ matrix.edition }}"
+        PACMAN_CONF="$VARIANT_DIR/pacman.conf"
+
         # Set SigLevel to Never in each pacman.conf
         if [ -f "$PACMAN_CONF" ]; then
           echo "Updating SigLevel in $PACMAN_CONF"

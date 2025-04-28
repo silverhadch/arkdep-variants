@@ -1,5 +1,6 @@
 base
-linux
+linux-zen
+linux-zen-headers
 linux-firmware
 pacman
 arkane-keyring
