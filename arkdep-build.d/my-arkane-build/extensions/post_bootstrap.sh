@@ -1,9 +1,7 @@
 printf '\e[1;32m-->\e[0m\e[1m Adding Chaotic AUR\e[0m\n'
 arch-chroot "$workdir" bash -c "
-  set -e
   pacman-key --init
   pacman-key --populate archlinux
-  pacman -Sy archlinux-keyring
   pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
   pacman-key --lsign-key 3056513887B78AEB
   pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
@@ -12,3 +10,4 @@ arch-chroot "$workdir" bash -c "
   pacman -Syyu
   cat /etc/pacman.conf
 "
+arch-chroot "$workdir" bash -c "cat /etc/pacman.conf"
