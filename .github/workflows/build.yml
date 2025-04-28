@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-      - dev  # Added dev branch for testing purposes
+      - dev 
   schedule:
-    - cron: '0 0 * * 0'  # Runs at 5 AM UTC daily
+    - cron: '0 0 * * 0'  # Runs weekly
 
 jobs:
   build:
@@ -16,7 +16,6 @@ jobs:
       matrix:
         edition:
           - my-arkane-build
-          # commented out because space
           # - arkanelinux
           # - test-arkanelinux-kde
       fail-fast: false
@@ -37,9 +36,9 @@ jobs:
         swap-storage: true
 
     - name: Install basic dependencies
-      shell: bash
       run: |
         sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
+        sudo apt-get update
         sudo apt-get install -y \
           gdisk zip systemd-container bmap-tools asciidoc \
           libarchive-tools git build-essential cmake \
@@ -51,7 +50,6 @@ jobs:
         sudo apt remove -y multipath-tools multipath-tools-boot
 
     - name: Install pacman manually
-      shell: bash
       env:
         PACMAN_VERSION: 6.0.2
       run: |
@@ -70,7 +68,6 @@ jobs:
         sudo rm -rf pacman
 
     - name: Install archlinux-keyring
-      shell: bash
       run: |
         sudo mkdir -p /usr/share/pacman/keyrings
         mkdir -p archlinux-keyring
@@ -84,35 +81,19 @@ jobs:
         sudo pacman-key --init
         sudo pacman-key --populate archlinux
 
-    - name: Install arch-install-scripts
-      shell: bash
-      env:
-        VERSION: "28"
-      run: |
-        wget https://github.com/archlinux/arch-install-scripts/archive/refs/tags/v${VERSION}.tar.gz -O arch-install-scripts.tar.gz
-        tar -xvf arch-install-scripts.tar.gz
-        cd arch-install-scripts-${VERSION}
-        make
-        sudo make PREFIX=/usr install
-        cd ..
-        rm -rf arch-install-scripts*
-
     - name: Install arkdep
-      shell: bash
       run: |
         git clone --depth 1 https://github.com/arkanelinux/arkdep.git
         sudo install -m755 arkdep/arkdep /usr/bin/
         sudo install -m755 arkdep/arkdep-build /usr/bin/
 
     - name: Clone variants repo
-      shell: bash
       run: |
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
         git clone --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_NAME"
 
     - name: Build variant
       id: build
-      shell: bash
       continue-on-error: true
       run: |
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
