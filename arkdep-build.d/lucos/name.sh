@@ -1,1 +1,1 @@
-echo "arkanelinux-kde-$(date +%Y-%m-%d)"
+echo "lucOS-$(date +%Y-%m-%d)"
