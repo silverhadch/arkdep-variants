@@ -1,5 +1,5 @@
 # Set list of AUR packages to install
-aur_packages=('yay-bin' 'dolphin-megasync-bin' 'megasync-bin' 'waydroid-helper'  'ttf-jetbrains-mono' 'ttf-nerd-fonts-symbols' 'usb-dirty-pages-udev' 'wayfire' 'wf-shell' 'wcm' 'cosmic-session-git')
+aur_packages=('yay-bin' 'megasync-bin' 'dolphin-megasync-bin' 'waydroid-helper'  'ttf-jetbrains-mono' 'ttf-nerd-fonts-symbols' 'usb-dirty-pages-udev' 'wayfire' 'wf-shell' 'wcm' 'cosmic-session-git')
 
 # Install build dependencies
 printf '\e[1;32m-->\e[0m\e[1m Installing build dependencies\e[0m\n'
