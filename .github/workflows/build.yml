@@ -105,43 +105,53 @@ jobs:
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
         git clone -b dev --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_NAME"
 
-    - name: Build variant
-      id: build
+    - name: Build and Upload variant
+      id: build-and-upload
       shell: bash
-      continue-on-error: true
-      run: |
-        REPO_NAME=$(basename -s .git "${{ github.repository }}")
-        mkdir -p target
-        cd "$REPO_NAME"
-        sudo arkdep-build ${{ matrix.edition }}
-        ls -lh target/
-        ls -R target/
-        sudo chown -R $USER:$USER target/
-        ls -lh target/
-        ls -R target/
-        checksum=($(sha1sum ./target/*.tar.*))
-        file=$(basename "$(ls ./target/*.tar.*)")
-        compress=${file##*.}
-        id=${file%%.*}
-        echo "$id:$compress:${checksum[0]}" > target/database
-        echo "Listing contents of target directory:"
-        ls -lh target/
-
-    - name: Rsync to SourceForge
       env:
         SF_SSH_KEY: ${{ secrets.SF_SSH_KEY }}
       run: |
+        set -eux
+
+        # 1) Vorbereitung und Build
+        REPO_NAME=$(basename -s .git "${{ github.repository }}")
+        WORKSPACE="${GITHUB_WORKSPACE}/${REPO_NAME}"
+        mkdir -p "${WORKSPACE}/target"
+        cd "${WORKSPACE}"
+        sudo arkdep-build ${{ matrix.edition }}
+
+        echo "=== Build finished, listing target/ ==="
+        ls -lh target/
+
+        # 2) Checksumme und database erzeugen
+        TAR_FILE=$(find target -maxdepth 1 -type f -name '*.tar.zst' | head -n1)
+        PKGS_FILE=$(find target -maxdepth 1 -type f -name '*.pkgs'  | head -n1)
+        DB_FILE="target/database"
+
+        checksum=$(sha1sum "$TAR_FILE" | awk '{print $1}')
+        filename=$(basename "$TAR_FILE")
+        ext="${filename##*.}"
+        id="${filename%%.*}"
+        echo "${id}:${ext}:${checksum}" > "$DB_FILE"
+
+        echo "TAR  -> $TAR_FILE"
+        echo "PKGS -> $PKGS_FILE"
+        echo "DB   -> $DB_FILE"
+
+        # 3) SSH einrichten
         mkdir -p ~/.ssh
         echo "$SF_SSH_KEY" > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan frs.sourceforge.net >> ~/.ssh/known_hosts
 
-        # Store the actual file paths in variables
-        pkgs_files=$(realpath target/*.pkgs)
-        tar_zst_files=$(realpath target/*.tar.zst)
-        database_file=$(realpath target/database)
+        # 4) Upload per rsync (nur wenn existiert)
+        DEST="silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/"
+        if [[ -f "$TAR_FILE" ]]; then
+          rsync -avP --delete "$TAR_FILE" "$DEST"
+        fi
 
-        # Rsync files individually
-        rsync -avP --delete "$pkgs_files" silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
-        rsync -avP --delete "$tar_zst_files" silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
-        rsync -avP --delete "$database_file" silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
+        if [[ -f "$PKGS_FILE" ]]; then
+          rsync -avP --delete "$PKGS_FILE" "$DEST"
+        fi
+
+        rsync -avP --delete "$DB_FILE" "$DEST"
