@@ -122,13 +122,14 @@ jobs:
         echo "Listing contents of target directory:"
         ls -lh target/
         ls -R target/
-        # artifact_path=$(realpath ./target/*.tar.zst || true)
-        # echo "${artifact_path}"
-        # echo "artifact-path=${artifact_path}" >> $GITHUB_OUTPUT
 
-#    - name: Upload tar.zst artifact
-#      if: steps.build.outputs.artifact-path != ''
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: ${{ matrix.edition }}-image
-#        path: ${{ steps.build.outputs.artifact-path }}
+
+    - name: Rsync to SourceForge
+      env:
+          SF_SSH_KEY: ${{ secrets.SF_SSH_KEY }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SF_SSH_KEY" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan frs.sourceforge.net >> ~/.ssh/known_hosts
+        rsync -avP --delete target/ silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
