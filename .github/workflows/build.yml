@@ -104,24 +104,28 @@ jobs:
       run: |
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
         git clone -b dev --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_NAME"
-        
+
     - name: Build variant
       id: build
       shell: bash
-      continue-on-error: true   # <-- Don't fail the entire matrix if this fails
+      continue-on-error: true
       run: |
         REPO_NAME=$(basename -s .git "${{ github.repository }}")
         mkdir -p target
         cd "$REPO_NAME"
         sudo arkdep-build ${{ matrix.edition }}
+        ls -lh target/
+        ls -R target/
+        sudo chown -R $USER:$USER target/
+        ls -lh target/
+        ls -R target/
         checksum=($(sha1sum ./target/*.tar.*))
-        file=$(basename $(ls ./target/*.tar.*))
+        file=$(basename "$(ls ./target/*.tar.*)")
         compress=${file##*.}
         id=${file%%.*}
         echo "$id:$compress:${checksum[0]}" > target/database
         echo "Listing contents of target directory:"
         ls -lh target/
-        ls -R target/
 
 
     - name: Rsync to SourceForge
