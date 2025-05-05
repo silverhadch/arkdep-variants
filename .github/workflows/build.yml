@@ -136,4 +136,4 @@ jobs:
         echo "$SF_SSH_KEY" > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan frs.sourceforge.net >> ~/.ssh/known_hosts
-        rsync -avP --delete target/ silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
+        rsync -avP --delete target/* silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
