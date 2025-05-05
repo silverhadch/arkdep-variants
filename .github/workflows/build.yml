@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - dev 
+      - dev
   schedule:
     - cron: '0 0 * * 0'  # Runs weekly
 
@@ -93,7 +93,7 @@ jobs:
         sudo make PREFIX=/usr install
         cd ..
         rm -rf arch-install-scripts*
-        
+
     - name: Install arkdep
       run: |
         git clone --depth 1 https://github.com/arkanelinux/arkdep.git
@@ -127,16 +127,21 @@ jobs:
         echo "Listing contents of target directory:"
         ls -lh target/
 
-
     - name: Rsync to SourceForge
       env:
-          SF_SSH_KEY: ${{ secrets.SF_SSH_KEY }}
+        SF_SSH_KEY: ${{ secrets.SF_SSH_KEY }}
       run: |
         mkdir -p ~/.ssh
         echo "$SF_SSH_KEY" > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan frs.sourceforge.net >> ~/.ssh/known_hosts
-        
-        rsync -avP --delete target/*.pkgs silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
-        rsync -avP --delete target/*.tar.zst silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
-        rsync -avP --delete target/database silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
+
+        # Store the actual file paths in variables
+        pkgs_files=$(realpath target/*.pkgs)
+        tar_zst_files=$(realpath target/*.tar.zst)
+        database_file=$(realpath target/database)
+
+        # Rsync files individually
+        rsync -avP --delete "$pkgs_files" silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
+        rsync -avP --delete "$tar_zst_files" silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
+        rsync -avP --delete "$database_file" silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/
