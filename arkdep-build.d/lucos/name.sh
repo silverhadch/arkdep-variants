@@ -1,1 +1,1 @@
-echo "lucOS-$(date +%Y-%m-%d)"
+echo "lucos-$(date +%Y-%m-%d)"
