@@ -46,7 +46,7 @@ jobs:
           libgpgme-dev libssl-dev fakeroot dh-autoreconf \
           haveged os-prober kwalify dosfstools libisoburn1 \
           squashfs-tools docbook2x mktorrent doxygen zstd \
-          s3cmd curl btrfs-progs meson libkmod-dev libkmod2
+          s3cmd curl btrfs-progs meson libkmod-dev libkmod2 rsync
         sudo apt remove -y multipath-tools multipath-tools-boot
 
     - name: Install pacman manually
@@ -114,16 +114,21 @@ jobs:
         mkdir -p target
         cd "$REPO_NAME"
         sudo arkdep-build ${{ matrix.edition }}
+        checksum=($(sha1sum ./target/*.tar.*))
+        file=$(basename $(ls ./target/*.tar.*))
+        compress=${file##*.}
+        id=${file%%.*}
+        echo "$id:$compress:${checksum[0]}" > target/database
         echo "Listing contents of target directory:"
         ls -lh target/
         ls -R target/
-        artifact_path=$(realpath ./target/*.tar.zst || true)
-        echo "${artifact_path}"
-        echo "artifact-path=${artifact_path}" >> $GITHUB_OUTPUT
+        # artifact_path=$(realpath ./target/*.tar.zst || true)
+        # echo "${artifact_path}"
+        # echo "artifact-path=${artifact_path}" >> $GITHUB_OUTPUT
 
-    - name: Upload tar.zst artifact
-      if: steps.build.outputs.artifact-path != ''
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.edition }}-image
-        path: ${{ steps.build.outputs.artifact-path }}
+#    - name: Upload tar.zst artifact
+#      if: steps.build.outputs.artifact-path != ''
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: ${{ matrix.edition }}-image
+#        path: ${{ steps.build.outputs.artifact-path }}
