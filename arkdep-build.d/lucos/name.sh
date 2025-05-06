@@ -1,1 +1,1 @@
-echo "lucos"
+echo "lucos-$(date +%Y-%m-%d)"
