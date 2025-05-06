@@ -6,7 +6,7 @@ on:
       - main
       - dev
   schedule:
-    - cron: '0 0 * * 0'  # Runs weekly
+    - cron: '30 0 * * *'  # Runs at midnight
 
 jobs:
   build:
@@ -24,6 +24,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Midnight ABBA
+      run: |
+        if [ "$(date -u +'%H:%M')" = "00:30" ]; then
+          echo "gimme gimme gimme a man after midnight"
+        fi
+        
     - name: Free up disk space
       uses: jlumbroso/free-disk-space@main
       with:
