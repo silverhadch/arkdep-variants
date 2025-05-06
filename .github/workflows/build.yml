@@ -144,14 +144,21 @@ jobs:
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan frs.sourceforge.net >> ~/.ssh/known_hosts
 
-        # 4) Upload per rsync (nur wenn existiert)
+        # 4) Delete the folder corresponding to the tar file in target/
+        TAR_FOLDER=$(basename "$TAR_FILE" .tar.zst)  # Assuming the folder name matches the tar file name
+        if [[ -d "target/$TAR_FOLDER" ]]; then
+          echo "Deleting folder target/$TAR_FOLDER"
+          rm -rf "target/$TAR_FOLDER"
+        fi
+
+        # 5) Upload per rsync (delete files from remote that are no longer in target)
         DEST="silverhadch@frs.sourceforge.net:/home/frs/project/lucos-arkdep/arkdep/lucos/"
         if [[ -f "$TAR_FILE" ]]; then
-          rsync -avP --delete "$TAR_FILE" "$DEST"
+          rsync -avP --delete "${WORKSPACE}/target/" "$DEST"
         fi
 
         if [[ -f "$PKGS_FILE" ]]; then
-          rsync -avP --delete "$PKGS_FILE" "$DEST"
+          rsync -avP --delete "${WORKSPACE}/target/" "$DEST"
         fi
 
-        rsync -avP --delete "$DB_FILE" "$DEST"
+        rsync -avP --delete "${WORKSPACE}/target/" "$DEST"
