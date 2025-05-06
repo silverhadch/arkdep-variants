@@ -148,7 +148,7 @@ jobs:
         TAR_FOLDER=$(basename "$TAR_FILE" .tar.zst)  # Assuming the folder name matches the tar file name
         if [[ -d "target/$TAR_FOLDER" ]]; then
           echo "Deleting folder target/$TAR_FOLDER"
-          rm -rf "target/$TAR_FOLDER"
+          sudo rm -rf "target/$TAR_FOLDER"
         fi
 
         # 5) Upload per rsync (delete files from remote that are no longer in target)
