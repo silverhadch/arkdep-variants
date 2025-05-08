@@ -9,5 +9,6 @@ arch-chroot "$workdir" bash -c "
   echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
   pacman -Syyu
   cat /etc/pacman.conf
+  pacman -Rns brltty
 "
 arch-chroot "$workdir" bash -c "cat /etc/pacman.conf"
