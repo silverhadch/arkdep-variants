@@ -38,5 +38,5 @@ arch-chroot "$workdir" userdel -r aur
 
 # Set Plymouth theme inside chroot
 printf '\e[1;32m-->\e[0m\e[1m Setting Plymouth theme to bgrt\e[0m\n'
-arch-chroot "$workdir" plymouth-set-default-theme -R bgrt
+arch-chroot "$workdir" plymouth-set-default-theme bgrt
 arch-chroot "$workdir" plymouth-set-default-theme
