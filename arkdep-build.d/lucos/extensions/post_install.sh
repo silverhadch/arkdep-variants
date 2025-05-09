@@ -1,5 +1,5 @@
 # Set list of AUR packages to install
-aur_packages=('yay-bin' 'megasync-bin' 'dolphin-megasync-bin' 'waydroid-helper'  'ttf-jetbrains-mono' 'ttf-nerd-fonts-symbols' 'usb-dirty-pages-udev' 'wayfire' 'wf-shell' 'wcm' 'cosmic-session-git')
+aur_packages=('waydroid-helper' 'ttf-jetbrains-mono' 'ttf-nerd-fonts-symbols' 'usb-dirty-pages-udev' 'wayfire' 'wf-shell' 'wcm' 'cosmic-session-git')
 
 # Install build dependencies
 printf '\e[1;32m-->\e[0m\e[1m Installing build dependencies\e[0m\n'
@@ -22,10 +22,15 @@ arch-chroot -u aur:aur "$workdir" bash -c "
   makepkg -si --noconfirm
 "
 
+# Install MEGA
+arch-chroot -u aur:aur "$workdir" bash -c "
+	sudo wget https://mega.nz/linux/repo/Arch_Extra/x86_64/megasync-x86_64.pkg.tar.zst && sudo pacman -U --noconfirm megasync-x86_64.pkg.tar.zst
+"
+
 # Install AUR packages using yay
 for package in "${aur_packages[@]}"; do
     printf "\e[1;32m-->\e[0m\e[1m Installing $package using yay\e[0m\n"
-    arch-chroot -u aur:aur "$workdir" bash -c "yay -S --noconfirm $package"
+    arch-chroot -u aur:aur "$workdir" bash -c "yay -Sy --noconfirm $package"
 done
 
 # Cleanup sudoers file

@@ -1,62 +1,68 @@
-# Plasma
-baloo-widgets
-bluedevil
-colord-kde
-discover
-dolphin
-dolphin-plugins
-kcolorchooser
-kcron
-kde-inotify-survey
-kde-inotify-survey
-kdeconnect
-kdegraphics-thumbnailers
-kdenetwork-filesharing
-khelpcenter
-kimageformats
-kio-admin
-kio-admin
-kio-extras
-kio-fuse
-kio-gdrive
-kmix
-kmousetool
-kmouth
-konsole
-kpipewire
-kscreen
-kscreenlocker
-ksystemlog
-kwalletmanager
-partitionmanager
-plasma-meta
-print-manager
-qqc2-desktop-style
-sddm
-sddm-kcm
-skanlite
-spectacle
+# GNOME
+evolution-data-server # For gnome-calendar Flatpak
+gdm
+gnome-backgrounds
+gnome-console
+gnome-control-center
+gnome-disk-utility
+gnome-initial-setup
+gnome-menus
+gnome-shell
+gnome-software
+gnome-system-monitor
+gnome-tour
+mutter
+nautilus
 
-# Plasma extra
+# GNOME extra
 bluez
 bluez-cups
 bluez-plugins
 bluez-utils
+cups
+cups-pdf
 flatpak
 fuse
-phonon-qt5-gstreamer
+fwupd
+gst-plugin-pipewire
+gst-plugins-base
+gst-plugins-good
+gvfs
+gvfs-afc
+gvfs-dnssd
+gvfs-dnssd
+gvfs-goa
+gvfs-gphoto2
+gvfs-mtp
+gvfs-nfs
+gvfs-smb
+gvfs-wsdd
+ibus-typing-booster
+networkmanager-openconnect
+networkmanager-openvpn
+noto-fonts
+noto-fonts-cjk
+noto-fonts-emoji
+pipewire
+pipewire-alsa
+pipewire-audio
+pipewire-jack
+pipewire-pulse
 power-profiles-daemon
-svgpart
-xdg-desktop-portal-kde
+spice-vdagent
+switcheroo-control
+system-config-printer
+webp-pixbuf-loader
+wireplumber
+xdg-desktop-portal-gnome
 xdg-user-dirs
 xdg-utils
 
 # Arkane Linux
 arkane-application-cleaner
-arkane-flatpak-init # Custom Init in overlay
+arkane-flatpak-init
 arkane-wallpapers
 libnss-extrausers
-skel-arkane
 
 # Community requested
 v4l-utils

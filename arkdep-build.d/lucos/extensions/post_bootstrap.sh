@@ -7,8 +7,7 @@ arch-chroot "$workdir" bash -c "
   pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
   pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
   echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
-  pacman -Syyu
+  pacman -Syyu --noconfirm
   cat /etc/pacman.conf
-  pacman -Rns brltty
 "
 arch-chroot "$workdir" bash -c "cat /etc/pacman.conf"
