@@ -70,6 +70,8 @@ v4l2loopback-dkms
 v4l2loopback-utils
 
 # My Additions
+hplip
+gnome-browser-connector
 vlc
 neovim
 wine
